@@ -26,6 +26,16 @@ const client = new MongoClient(uri, {
 
 const toysCollection = client.db("aliveBaby").collection("toys");
 
+app.get("/toySearchByName/:text", async (req, res) => {
+  const searchText = req.params.text;
+  const result = await toysCollection
+    .find({
+      $or: [{ name: { $regex: searchText, $options: "i" } }],
+    })
+    .toArray();
+  res.send(result);
+});
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -41,7 +51,7 @@ async function run() {
 
     // read all data from server database
     app.get("/alltoys", async (req, res) => {
-      const result = await toysCollection.find().toArray();
+      const result = await toysCollection.find().limit(20).toArray();
       res.send(result);
     });
 
@@ -61,6 +71,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/mytoys/:text", async (req, res) => {
+      const result = await toysCollection
+        .find({ subcategory: req.params.text })
+        .toArray();
+      res.send(result);
+    });
+
     // delete data with id accordion
     app.delete("/mytoys/:id", async (req, res) => {
       const id = req.params.id;
@@ -69,50 +86,25 @@ async function run() {
       res.send(result);
     });
 
-    // app.get("/mytoys/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const query = { _id: new ObjectId(id) };
-    //   const options = {
-    //     projection: {
-    //       name: 1,
-    //       subcategory: 1,
-    //       price: 1,
-    //       ratings: 1,
-    //       sellerName: 1,
-    //       email: 1,
-    //       photo: 1,
-    //       quantity: 1,
-    //       description: 1,
-    //     },
-    //   };
-    //   const result = await toysCollection.findOne(query, options);
-    //   res.send(result);
-    // });
-
-    // modifiedCount
-
     // update data with id accordion**********
     app.put("/updatetoy/:id", async (req, res) => {
       const id = req.params.id;
+      const body = req.body;
       const filter = { _id: new ObjectId(id) };
-      const options = { upsert: true };
-      const updated = req.body;
-
-      const updateDoc = {
+      const updatedDoc = {
         $set: {
-          name: updated.name,
-          _id: updated._id,
-          subcategory: updated.subcategory,
-          price: updated.price,
-          rating: updated.rating,
-          sellerName: updated.sellerName,
-          email: updated.email,
-          photo: updated.photo,
-          quantity: updated.quantity,
-          description: updated.description,
+          name: body.name,
+          subcategory: body.subcategory,
+          price: body.price,
+          rating: body.rating,
+          sellerName: body.sellerName,
+          email: body.email,
+          photo: body.photo,
+          quantity: body.quantity,
+          description: body.description,
         },
       };
-      const result = await toysCollection.updateOne(filter, updateDoc, options);
+      const result = await toysCollection.updateOne(filter, updatedDoc);
       res.send(result);
     });
 
