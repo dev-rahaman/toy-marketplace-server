@@ -25,6 +25,7 @@ const client = new MongoClient(uri, {
 });
 
 const toysCollection = client.db("aliveBaby").collection("toys");
+const messageCollection = client.db("aliveBaby").collection("message");
 
 app.get("/toySearchByName/:text", async (req, res) => {
   const searchText = req.params.text;
@@ -117,6 +118,13 @@ async function run() {
         },
       };
       const result = await toysCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    // send message data on server database
+    app.post("/message", async (req, res) => {
+      const cursor = req.body;
+      const result = await messageCollection.insertOne(cursor);
       res.send(result);
     });
 
