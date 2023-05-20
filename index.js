@@ -55,6 +55,18 @@ async function run() {
       res.send(result);
     });
 
+    // sort with ascending
+    app.get("/ascending", async (req, res) => {
+      const result = await toysCollection.find().sort({ price: 1 }).toArray();
+      res.send(result);
+    });
+
+    // sort with Descending
+    app.get("/descending", async (req, res) => {
+      const result = await toysCollection.find().sort({ price: -1 }).toArray();
+      res.send(result);
+    });
+
     // read one data from database
     app.get("/alltoys/:id", async (req, res) => {
       const id = req.params.id;
