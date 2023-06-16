@@ -13,7 +13,7 @@ app.get("/", (req, res) => {
   res.send("hello");
 });
 
-const uri = `mongodb+srv://${process.env.USER_KEY}:${process.env.PASS_KEY}@cluster0.bk91ias.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.MONGODB_USER_KEY}:${process.env.MONGODB_PASS_KEY}@cluster0.bk91ias.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -25,6 +25,7 @@ const client = new MongoClient(uri, {
 
 const toysCollection = client.db("aliveBaby").collection("toys");
 const messageCollection = client.db("aliveBaby").collection("message");
+const blogsCollection = client.db("aliveBaby").collection("blogs");
 
 app.get("/toySearchByName/:text", async (req, res) => {
   const searchText = req.params.text;
@@ -122,6 +123,19 @@ async function run() {
     app.post("/message", async (req, res) => {
       const cursor = req.body;
       const result = await messageCollection.insertOne(cursor);
+      res.send(result);
+    });
+
+    // Blogs Section
+    app.get("/blogs", async (req, res) => {
+      const result = await blogsCollection.find().sort().toArray();
+      res.send(result);
+    });
+
+    app.get("/blog/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await blogsCollection.findOne(query);
       res.send(result);
     });
 
